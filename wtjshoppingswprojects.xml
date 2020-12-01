@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <extension type="plugin" version="3.5" method="upgrade" group="jshoppingorder">
-    <name>Jshoppingorder - WT SW Projects keys in JoomShopping order view</name>
+    <name>Jshoppingorder - WT Jshopping SW Projects</name>
     <author>Sergey Tolkachyov</author>
     <authorEmail>info@web-tolk.ru</authorEmail>
     <authorUrl>https://web-tolk.ru/</authorUrl>
