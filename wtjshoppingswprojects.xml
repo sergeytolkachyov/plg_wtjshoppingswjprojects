@@ -36,4 +36,7 @@
             </fieldset>
         </fields>
     </config>
+    <updateservers>
+        <server type="extension" name="WebTolk Update Server">https://web-tolk.ru/component/swjprojects/jupdate.html?element=plg_wtjshoppingswprojects</server>
+    </updateservers>
 </extension>
