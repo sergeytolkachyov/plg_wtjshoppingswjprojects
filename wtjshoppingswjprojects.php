@@ -14,7 +14,7 @@ use Joomla\CMS\Router\Route;
 use Joomla\CMS\Table\Table;
 jimport('joomla.plugin.plugin');
 
-class plgJshoppingorderWtjshoppingswprojects extends JPlugin
+class plgJshoppingorderWtjshoppingswjprojects extends JPlugin
 {
 
 	public function __construct( &$subject, $config )
