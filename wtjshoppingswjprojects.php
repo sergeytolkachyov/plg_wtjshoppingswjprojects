@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     WT JoomShopping SW Projects
- * @version     1.0.0
+ * @version     1.1.0
  * @Author Sergey Tolkachyov, https://web-tolk.ru
  * @copyright   Copyright (C) 2020 Sergey Tolkachyov
  * @license     GNU/GPL 3.0
@@ -12,6 +12,7 @@ defined( '_JEXEC' ) or die;
 use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Router\Route;
 use Joomla\CMS\Table\Table;
+use Joomla\CMS\Language\Text;
 jimport('joomla.plugin.plugin');
 
 class plgJshoppingorderWtjshoppingswjprojects extends JPlugin
@@ -26,6 +27,7 @@ class plgJshoppingorderWtjshoppingswjprojects extends JPlugin
 
 
     public function onBeforeDisplayOrderView($view){
+	    JLoader::register('SWJProjectsHelperRoute', JPATH_SITE . '/components/com_swjprojects/helpers/route.php');
 	    $order_view_tmp_var = $this->params->get("order_view_tmp_var");
 	    $rows = $view->order->items;
 	    $jshopping_extra_field_id = $this->params->get("jshopping_extra_field_id");
@@ -40,23 +42,26 @@ class plgJshoppingorderWtjshoppingswjprojects extends JPlugin
 	        $html = "<div class='input-group my-1'>
 				        <input type='text' class='form-control form-control-sm' disabled value='".$key["key"]."'>
 				      </div>";
-	        $html .="Начало действия: ".date("d.m.Y",strtotime($key["date_start"]))."<br/>";
+	        $html .= Text::_("PLG_WTJSHOPPINGSWJPROJECTS_SINGLE_ORDER_VIEW_DATE_START")." ".date("d.m.Y",strtotime($key["date_start"]))."<br/>";
 
 	        /*
 	         * Проверка даты
-	         * @todo Сделать языковые константы
 	         */
 				if($key["date_end"] === "0000-00-00 00:00:00"){
-					$html .="Окончание действия: бессрочно<br/>";
+					$html .= Text::_("PLG_WTJSHOPPINGSWJPROJECTS_SINGLE_ORDER_VIEW_DATE_START")." ".Text::_("PLG_WTJSHOPPINGSWJPROJECTS_SINGLE_ORDER_VIEW_DATE_START")."<br/>";
 				} elseif (time() > strtotime($key["date_end"])){
-					$html .="Срок действия ключа истёк ".date("d.m.Y",strtotime($key["date_end"]))."<br/>";
+					$html .= Text::_("PLG_WTJSHOPPINGSWJPROJECTS_SINGLE_ORDER_VIEW_DATE_ENDED")." ".date("d.m.Y",strtotime($key["date_end"]))."<br/>";
 				}elseif (time() < strtotime($key["date_end"])){
-					$html .="Окончание действия: ".date("d.m.Y",strtotime($key["date_end"]))."<br/>";
+					$html .= Text::_("PLG_WTJSHOPPINGSWJPROJECTS_SINGLE_ORDER_VIEW_DATE_END")." ".date("d.m.Y",strtotime($key["date_end"]))."<br/>";
 				}
 
 				if($this->params->get("show_note_in_order") == 1){
-					$html .="Примечание: ".$key["note"];
+					$html .= Text::_("PLG_WTJSHOPPINGSWJPROJECTS_SINGLE_ORDER_VIEW_NOTE")." ".$key["note"];
 				}
+
+	        $downloadLink = Route::_(SWJProjectsHelperRoute::getDownloadRoute(null, $key["project_id"], $key["element"], $key["key"]));
+	        $html .= "<br/><a href='".$downloadLink."' class='".$this->params->get("checkout_finish_download_btn_css_style")."'>".Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DOWNLOAD")."</a>";
+
 	            $row->$order_view_tmp_var .= $html;
 			}
 
@@ -73,9 +78,10 @@ class plgJshoppingorderWtjshoppingswjprojects extends JPlugin
 		$jshopping_extra_field_id = $this->params->get("jshopping_extra_field_id");
 		$note = ""; //@todo Free attributes for Domain setting
 		$show_keys_on_checkout = $this->params->get("show_key_info_on_checkout_finish");
+
 		if($show_keys_on_checkout == 1)
 		{
-			$text .= "<table class='table table-bordered'><thead><th>Расширение</th><th>Ключ</th><th>Начало действия</th><th>Окончание действия</th><th>Скачать</th></thead><tbody>";
+			$text .= "<table class='".$this->params->get("checkout_finish_key_table_css_style")."'><thead><th>".Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_EXTENSION_NAME")."</th><th>".Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_KEY")."</th><th>".Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DATE_START")."</th><th>".Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DATE_END")."</th><th>".Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DOWNLOAD")."</th></thead><tbody>";
 		}
 		foreach ($order->items as $item)
 		{
@@ -85,14 +91,24 @@ class plgJshoppingorderWtjshoppingswjprojects extends JPlugin
 			$project_id = $project_id['extra_field_' . $jshopping_extra_field_id];
 			$date_start = date("Y-m-d H:i:s");
 			$date_end   = (date('Y') + 1) . date('-m-d H:i:s');
-			$key        = $this->generateKey($order->order_number, $project_id, $order->email, $note, $date_start, $date_end);
+			/*
+			 * Get free attr value for domain name
+			 */
+			if(!empty($item->freeattributes)){
+				$item_freeattributes = unserialize($item->freeattributes);
+				$note = "";
+				if($this->params->get("ask_domain") == 1 && !empty($this->params->get("jshopping_free_attr_id"))){
+					$free_attr_id_for_domain = $this->params->get("jshopping_free_attr_id");
+					$note = $item_freeattributes[$free_attr_id_for_domain];
+				}
+			}
+			$key = $this->generateKey($order->order_number, $project_id, $order->email, $note, $date_start, $date_end);
 			if ($show_keys_on_checkout == 1){
-				$text .= "	<tr><td>" . $item->product_name . "</td><td>" . $key["key"]->key . "</td><td>" . $key["key"]->date_start . "</td><td>" . $key["key"]->date_end . "</td><td><a class='btn btn-success' href='" . $key["download_link"] . "'>Скачать</a></td></tr>";
+				$text .= "	<tr><td>" . $item->product_name . "<br/>".$note."</td><td>" . $key["key"]->key . "</td><td>" . $key["key"]->date_start . "</td><td>" . $key["key"]->date_end . "</td><td><a class='".$this->params->get("checkout_finish_download_btn_css_style")."' href='" . $key["download_link"] . "'>".Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DOWNLOAD")."</a></td></tr>";
 			}
 		}
-		if($show_keys_on_checkout == 1)
-		{
-		$text .= "</tbody></table>";
+		if($show_keys_on_checkout == 1){
+			$text .= "</tbody></table>";
 		}
 	}
 
@@ -168,11 +184,17 @@ class plgJshoppingorderWtjshoppingswjprojects extends JPlugin
 	private function getSwprojectsKey($order_number, $project_id){
 		$db = JFactory::getDBO();
 		$query = $db->getQuery(true);
-		$query->select($db->quoteName('*'))
-			->from($db->quoteName('#__swjprojects_keys'))
-			->where($db->quoteName('order') ." = ".$order_number)
-			->where($db->quoteName('project_id') ." = ".$project_id)
-			->where($db->quoteName('state') ." = 1");
+		$query->select($db->quoteName(array('a.*','b.element')))
+			->from($db->quoteName('#__swjprojects_keys','a'))
+			->join('INNER', $db->quoteName('#__swjprojects_projects','b') . ' ON ' . $db->quoteName('a.project_id') . ' = ' . $db->quoteName('b.id'))
+			->where($db->quoteName('a.order') ." = ".$order_number)
+			->where($db->quoteName('a.project_id') ." = ".$project_id)
+			->where($db->quoteName('a.state') ." = 1");
+
+
+		/*
+		 * inner join "element" from projects table where sw_project_keys.project_id = sw_projects.id
+		 */
 		$db->setQuery($query);
 		$key = $db->loadAssoc();
 		return $key;
