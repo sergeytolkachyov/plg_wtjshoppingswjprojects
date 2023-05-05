@@ -1,20 +1,19 @@
 <?xml version="1.0"?>
-<extension type="plugin" version="3.6" method="upgrade" group="jshoppingorder">
+<extension type="plugin" version="3.9" method="upgrade" group="jshoppingorder">
     <name>Jshoppingorder - WT Jshopping SW JProjects</name>
     <author>Sergey Tolkachyov</author>
     <authorEmail>info@web-tolk.ru</authorEmail>
     <authorUrl>https://web-tolk.ru/</authorUrl>
-	<creationDate>30/11/2020</creationDate>
+	<creationDate>May 2023</creationDate>
     <copyright>Sergey Tolkachyov</copyright>
     <license>GNU GPL 3.0</license>
-    <version>1.1.0</version>
+    <version>2.0.0</version>
     <description>PLG_WTJSHOPPINGSWJPROJECTS_DESC</description>
 	<scriptfile>script.php</scriptfile>
     <files>
         <filename plugin="wtjshoppingswjprojects">wtjshoppingswjprojects.php</filename>
         <folder>fields</folder>
         <folder>language</folder>
-        <filename>index.html</filename>
     </files>
     <languages folder="language" client="administrator">
         <language tag="en-GB">en-GB/en-GB.plg_jshoppingorder_wtjshoppingswjprojects.ini</language>
@@ -25,6 +24,7 @@
     <config>
         <fields name="params">
             <fieldset name="basic">
+			<field addfieldpath="plugins/jshoppingorder/wtjshoppingswjprojects/fields" type="plugininfo" name="plugininfo"/>
                     <field type="list" name="order_view_tmp_var" label="PLG_WTJSHOPPINGSWJPROJECTS_ORDER_VIEW_TMP_VAR" description="PLG_WTJSHOPPINGSWJPROJECTS_ORDER_VIEW_TMP_VAR_DESС">
                         <option value="_ext_attribute_html">_ext_attribute_html</option>
                         <option value="_ext_file_html">_ext_file_html</option>
