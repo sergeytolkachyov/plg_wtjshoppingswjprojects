@@ -1,61 +1,91 @@
 <?xml version="1.0"?>
-<extension type="plugin" version="3.9" method="upgrade" group="jshoppingorder">
+<extension type="plugin" method="upgrade" group="jshoppingorder">
     <name>Jshoppingorder - WT Jshopping SW JProjects</name>
     <author>Sergey Tolkachyov</author>
     <authorEmail>info@web-tolk.ru</authorEmail>
     <authorUrl>https://web-tolk.ru/</authorUrl>
-	<creationDate>May 2023</creationDate>
+	<creationDate>July 2024</creationDate>
     <copyright>Sergey Tolkachyov</copyright>
     <license>GNU GPL 3.0</license>
-    <version>2.0.0</version>
+    <version>2.1.0</version>
     <description>PLG_WTJSHOPPINGSWJPROJECTS_DESC</description>
 	<scriptfile>script.php</scriptfile>
+    <namespace path="src">Joomla\Plugin\Jshoppingorder\Wtjshoppingswjprojects</namespace>
     <files>
-        <filename plugin="wtjshoppingswjprojects">wtjshoppingswjprojects.php</filename>
-        <folder>fields</folder>
+        <folder plugin="wtjshoppingswjprojects">src</folder>
+        <folder>services</folder>
         <folder>language</folder>
     </files>
     <languages folder="language" client="administrator">
-        <language tag="en-GB">en-GB/en-GB.plg_jshoppingorder_wtjshoppingswjprojects.ini</language>
-        <language tag="ru-RU">ru-RU/ru-RU.plg_jshoppingorder_wtjshoppingswjprojects.ini</language>
-        <language tag="en-GB">en-GB/en-GB.plg_jshoppingorder_wtjshoppingswjprojects.sys.ini</language>
-        <language tag="ru-RU">ru-RU/ru-RU.plg_jshoppingorder_wtjshoppingswjprojects.sys.ini</language>
+        <language tag="en-GB">en-GB/plg_jshoppingorder_wtjshoppingswjprojects.ini</language>
+        <language tag="ru-RU">ru-RU/plg_jshoppingorder_wtjshoppingswjprojects.ini</language>
+        <language tag="en-GB">en-GB/plg_jshoppingorder_wtjshoppingswjprojects.sys.ini</language>
+        <language tag="ru-RU">ru-RU/plg_jshoppingorder_wtjshoppingswjprojects.sys.ini</language>
     </languages>
     <config>
         <fields name="params">
             <fieldset name="basic">
-			<field addfieldpath="plugins/jshoppingorder/wtjshoppingswjprojects/fields" type="plugininfo" name="plugininfo"/>
-                    <field type="list" name="order_view_tmp_var" label="PLG_WTJSHOPPINGSWJPROJECTS_ORDER_VIEW_TMP_VAR" description="PLG_WTJSHOPPINGSWJPROJECTS_ORDER_VIEW_TMP_VAR_DESС">
-                        <option value="_ext_attribute_html">_ext_attribute_html</option>
-                        <option value="_ext_file_html">_ext_file_html</option>
-                        <option value="_ext_price_html">_ext_price_html</option>
-                    </field>
-                <field addfieldpath="plugins/jshoppingorder/wtjshoppingswjprojects/fields" type="jshoppingextrafields"  name="jshopping_extra_field_id" label="PLG_WTJSHOPPINGSWJPROJECTS_JSHOPPING_EXTRA_FIELD_ID">
+			<field addfieldprefix="Joomla\Plugin\Jshoppingorder\Wtjshoppingswjprojects\Fields"
+                   type="plugininfo"
+                   name="plugininfo"/>
+                <field type="list"
+                       name="order_view_tmp_var"
+                       label="PLG_WTJSHOPPINGSWJPROJECTS_ORDER_VIEW_TMP_VAR"
+                       description="PLG_WTJSHOPPINGSWJPROJECTS_ORDER_VIEW_TMP_VAR_DESС">
+                    <option value="_ext_attribute_html">_ext_attribute_html</option>
+                    <option value="_ext_file_html">_ext_file_html</option>
+                    <option value="_ext_price_html">_ext_price_html</option>
+                </field>
+                <field addfieldprefix="Joomla\Plugin\Jshoppingorder\Wtjshoppingswjprojects\Fields"
+                       type="jshoppingextrafields"
+                       name="jshopping_extra_field_id"
+                       label="PLG_WTJSHOPPINGSWJPROJECTS_JSHOPPING_EXTRA_FIELD_ID">
                     <option value=""/>
                 </field>
 
-                <field name="ask_domain"  type="radio" label="PLG_WTJSHOPPINGSWJPROJECTS_ASK_DOMAIN_FOR_KEY" class="btn-group btn-group-yesno" default="0">
+                <field name="ask_domain"
+                       type="radio" label="PLG_WTJSHOPPINGSWJPROJECTS_ASK_DOMAIN_FOR_KEY"
+                       class="btn-group btn-group-yesno"
+                       default="0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field addfieldpath="plugins/jshoppingorder/wtjshoppingswjprojects/fields" type="jshoppingfreeattr"  name="jshopping_free_attr_id" label="PLG_WTJSHOPPINGSWJPROJECTS_JSHOPPING_FREE_ATTR_ID_FOR_DOMAIN_NAME" showon="ask_domain:1">
+                <field addfieldprefix="Joomla\Plugin\Jshoppingorder\Wtjshoppingswjprojects\Fields"
+                       type="jshoppingfreeattr"  name="jshopping_free_attr_id"
+                       label="PLG_WTJSHOPPINGSWJPROJECTS_JSHOPPING_FREE_ATTR_ID_FOR_DOMAIN_NAME"
+                       showon="ask_domain:1">
                     <option value=""/>
                 </field>
 
-                <field name="show_note_in_order"  type="radio" label="PLG_WTJSHOPPINGSWJPROJECTS_SHOW_NOTE_IN_ORDER" class="btn-group btn-group-yesno" default="0">
+                <field name="show_note_in_order"
+                       type="radio"
+                       label="PLG_WTJSHOPPINGSWJPROJECTS_SHOW_NOTE_IN_ORDER"
+                       class="btn-group btn-group-yesno"
+                       default="0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field name="show_key_info_on_checkout_finish"  type="radio" label="PLG_WTJSHOPPINGSWJPROJECTS_SHOW_KEY_INFO_ON_CHECKOUT_FINISH" class="btn-group btn-group-yesno" default="0">
+                <field name="show_key_info_on_checkout_finish"
+                       type="radio"
+                       label="PLG_WTJSHOPPINGSWJPROJECTS_SHOW_KEY_INFO_ON_CHECKOUT_FINISH"
+                       class="btn-group btn-group-yesno"
+                       default="0">
                     <option value="1">JYES</option>
                     <option value="0">JNO</option>
                 </field>
-                <field type="text" name="checkout_finish_key_table_css_style"  label="PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_KEY_TABLE_CSS" default="table table-bordered"/>
-                <field type="text" name="checkout_finish_download_btn_css_style"  label="PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DOWNLOAD_BTN_CSS" default="btn btn-success"/>
+                <field type="text"
+                       name="checkout_finish_key_table_css_style"
+                       label="PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_KEY_TABLE_CSS"
+                       default="table table-bordered"/>
+                <field type="text"
+                       name="checkout_finish_download_btn_css_style"
+                       label="PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DOWNLOAD_BTN_CSS"
+                       default="btn btn-success"/>
             </fieldset>
         </fields>
     </config>
     <updateservers>
-        <server type="extension" name="WebTolk Update Server">https://web-tolk.ru/component/swjprojects/jupdate.html?element=plg_wtjshoppingswjprojects</server>
+        <server type="extension" priority="1" name="WT Jshopping SW JProjects updates">https://web-tolk.ru/component/swjprojects/jupdate?element=plg_wtjshoppingswjprojects</server>
     </updateservers>
+    <changelogurl>https://web-tolk.ru/jchangelog?element=plg_wtjshoppingswjprojects</changelogurl>
 </extension>
