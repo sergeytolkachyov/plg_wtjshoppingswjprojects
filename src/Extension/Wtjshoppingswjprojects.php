@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     WT JoomShopping SW Projects
- * @version     2.1.0
+ * @version     2.1.1
  * @Author      Sergey Tolkachyov, https://web-tolk.ru
  * @copyright   Copyright (C) 2020 Sergey Tolkachyov
  * @license     GNU/GPL 3.0
@@ -16,16 +16,14 @@ defined('_JEXEC') or die;
 
 use Joomla\CMS\HTML\HTMLHelper;
 use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\CMS\Factory;
-use Joomla\CMS\MVC\Model\BaseDatabaseModel;
 use Joomla\CMS\Router\Route;
-use Joomla\CMS\Table\Table;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Date\Date;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
+use Joomla\Component\SWJProjects\Site\Helper\RouteHelper;
 
 class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 {
@@ -62,7 +60,6 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 		 */
 		[$view] = $event->getArguments();
 
-		\JLoader::register('SWJProjectsHelperRoute', JPATH_SITE . '/components/com_swjprojects/helpers/route.php');
 		$order_view_tmp_var       = $this->params->get("order_view_tmp_var");
 		$rows                     = $view->order->items;
 		$jshopping_extra_field_id = $this->params->get("jshopping_extra_field_id");
@@ -108,7 +105,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 				$html .= Text::_("PLG_WTJSHOPPINGSWJPROJECTS_SINGLE_ORDER_VIEW_NOTE") . " " . $key["note"];
 			}
 
-			$downloadLink = Route::_(\SWJProjectsHelperRoute::getDownloadRoute(null, $key["project_id"], $key["element"], $key["key"]));
+			$downloadLink = Route::_(RouteHelper::getDownloadRoute(null, $key["project_id"], $key["element"], $key["key"]));
 			$html         .= "<br/><a href='" . $downloadLink . "' class='" . $this->params->get("checkout_finish_download_btn_css_style") . "'>" . Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DOWNLOAD") . "</a>";
 
 			$row->$order_view_tmp_var .= $html;
@@ -159,7 +156,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 			->where($db->quoteName('a.order') . " = " . $order_number)
 			->where($db->quoteName('a.projects') . " = " . $project_id)
 			->where($db->quoteName('a.state') . " = 1");
-		/*
+		/**
 		 * inner join "element" from projects table where sw_project_keys.project_id = sw_projects.id
 		 */
 		$db->setQuery($query);
@@ -264,19 +261,10 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 	 */
 	private function generateKey($order_number, $project_id, $email, $note, $date_start, $date_end, $user_id = 0)
 	{
-		\JLoader::register('SWJProjectsHelperRoute', JPATH_SITE . '/components/com_swjprojects/helpers/route.php');
-		\JLoader::register('SWJProjectsHelperImages', JPATH_SITE . '/components/com_swjprojects/helpers/images.php');
-		\JLoader::register('SWJProjectsHelperTranslation', JPATH_ADMINISTRATOR . '/components/com_swjprojects/helpers/translation.php');
-
-		BaseDatabaseModel::addIncludePath(JPATH_SITE . '/components/com_swjprojects/models');
-		$modelProject = BaseDatabaseModel::getInstance('Project', 'SWJProjectsModel', array('ignore_request' => false));
+		$modelProject = $this->getApplication()->bootComponent('com_swjprojects')->getMVCFactory()->createModel('Project', 'Site', array('ignore_request' => false));
 		if ($project = $modelProject->getItem($project_id))
 		{
-			\JLoader::register('SWJProjectsHelperKeys', JPATH_ADMINISTRATOR . '/components/com_swjprojects/helpers/keys.php');
-			Table::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_swjprojects/tables');
-			BaseDatabaseModel::addIncludePath(JPATH_ADMINISTRATOR . '/components/com_swjprojects/models');
-
-			$modelKey = BaseDatabaseModel::getInstance('Key', 'SWJProjectsModel', array('ignore_request' => true));
+			$modelKey = $this->getApplication()->bootComponent('com_swjprojects')->getMVCFactory()->createModel('Key', 'Administrator', ['ignore_request' => true]);
 			$data     = [
 				'key'        => '',
 				'id'         => 0,
@@ -297,7 +285,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 			if ($modelKey->save($data))
 			{
 				$key          = $modelKey->getItem();
-				$downloadLink = Route::_(\SWJProjectsHelperRoute::getDownloadRoute(null, $project_id,
+				$downloadLink = Route::_(RouteHelper::getDownloadRoute(null, $project_id,
 					$project->element, $key->key));
 
 				return [
