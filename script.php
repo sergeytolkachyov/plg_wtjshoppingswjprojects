@@ -87,7 +87,7 @@ return new class () implements ServiceProviderInterface {
 			 */
 			public function install(InstallerAdapter $adapter): bool
 			{
-				$this->enablePlugin($adapter);
+				// $this->enablePlugin($adapter);
 
 				return true;
 			}
