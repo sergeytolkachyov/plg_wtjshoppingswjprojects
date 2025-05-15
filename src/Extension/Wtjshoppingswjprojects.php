@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     WT JoomShopping SW Projects
- * @version     2.1.1
+ * @version     2.1.1.1
  * @Author      Sergey Tolkachyov, https://web-tolk.ru
  * @copyright   Copyright (C) 2020 Sergey Tolkachyov
  * @license     GNU/GPL 3.0
@@ -20,6 +20,7 @@ use Joomla\CMS\Router\Route;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Date\Date;
 use Joomla\CMS\Uri\Uri;
+use Joomla\Component\Jshopping\Site\Lib\JSFactory;
 use Joomla\Database\DatabaseAwareTrait;
 use Joomla\Event\Event;
 use Joomla\Event\SubscriberInterface;
@@ -30,6 +31,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 	use DatabaseAwareTrait;
 
 	protected $autoloadLanguage = true;
+
 	/**
 	 * Returns an array of events this subscriber will listen to.
 	 *
@@ -53,10 +55,10 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 	 *
 	 * @since 1.0.0
 	 */
-	public function onBeforeDisplayOrderView(Event $event):void
+	public function onBeforeDisplayOrderView(Event $event): void
 	{
 		/**
-		 * @var object $view     статический текст для страницы Завершения заказа из настроек JoomShopping
+		 * @var object $view статический текст для страницы Завершения заказа из настроек JoomShopping
 		 */
 		[$view] = $event->getArguments();
 
@@ -70,7 +72,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 			$product_id   = $row->product_id;
 			$order_number = $view->order->order_number;
 			$project_id   = $this->getSwprojectsIdFromJshoppingProduct((int) $product_id, (int) $jshopping_extra_field_id);
-			if(empty($project_id))
+			if (empty($project_id))
 			{
 				continue;
 			}
@@ -79,7 +81,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 			$key = $this->getSwprojectsKey($order_number, $project_id);
 
 			$html = "<div class='input-group my-1'>
-				        <input type='text' class='form-control form-control-sm' disabled value='" . $key["key"] . "'>
+				        <input type='text' class='form-control form-control-sm' disabled value='" . $key['key'] . "'>
 				      </div>";
 			$html .= Text::_("PLG_WTJSHOPPINGSWJPROJECTS_SINGLE_ORDER_VIEW_DATE_START") . " " . date("d.m.Y", strtotime($key["date_start"])) . "<br/>";
 
@@ -105,7 +107,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 				$html .= Text::_("PLG_WTJSHOPPINGSWJPROJECTS_SINGLE_ORDER_VIEW_NOTE") . " " . $key["note"];
 			}
 
-			$downloadLink = Route::_(RouteHelper::getDownloadRoute(null, $key["project_id"], $key["element"], $key["key"]));
+			$downloadLink = Route::_(RouteHelper::getDownloadRoute(null, $key["project_id"], $key["element"], $key['key']));
 			$html         .= "<br/><a href='" . $downloadLink . "' class='" . $this->params->get("checkout_finish_download_btn_css_style") . "'>" . Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DOWNLOAD") . "</a>";
 
 			$row->$order_view_tmp_var .= $html;
@@ -165,7 +167,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 		return $keys;
 	}
 
-	public function onBeforeDisplayCheckoutFinish(Event $event):void
+	public function onBeforeDisplayCheckoutFinish(Event $event): void
 	{
 		/**
 		 * @var string $text     статический текст для страницы Завершения заказа из настроек JoomShopping
@@ -173,14 +175,14 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 		 */
 		[$text, $order_id] = $event->getArguments();
 
-		$order = \JSFactory::getTable('order', 'jshop');
+		$order = JSFactory::getTable('order', 'jshop');
 		$order->load($order_id);
 		$order->getAllItems();
 		$jshopping_extra_field_id = $this->params->get("jshopping_extra_field_id");
 		$show_keys_on_checkout    = $this->params->get("show_key_info_on_checkout_finish");
 
-		$user_info = \Joomla\Component\Jshopping\Site\Lib\JSFactory::getUser();
-		$user_id   = $user_info->user_id;
+		$user_info = JSFactory::getUser();
+		$user_id   = (int) $user_info->user_id;
 
 		$order_status_comment    = '';
 		$table_rows              = '';
@@ -190,7 +192,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 		{
 
 			$product_id = $item->product_id;
-			$project_id = $this->getSwprojectsIdFromJshoppingProduct((int) $product_id, (int) $jshopping_extra_field_id);
+			$project_id = (int) $this->getSwprojectsIdFromJshoppingProduct((int) $product_id, (int) $jshopping_extra_field_id);
 
 			if (empty($project_id))
 			{
@@ -214,17 +216,18 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 				if ($this->params->get("ask_domain") == 1 && !empty($this->params->get("jshopping_free_attr_id")))
 				{
 					$free_attr_id_for_domain = $this->params->get("jshopping_free_attr_id");
-					$note                    = $item_freeattributes[$free_attr_id_for_domain];
+					$note                    = trim($item_freeattributes[$free_attr_id_for_domain]);
+					$note                    = (new Uri($note))->setScheme('https')->toString();
 				}
 			}
-			$key = $this->generateKey($order->order_number, $project_id, $order->email, $note, (string) $date_start, (string) $date_end, $user_id);
+			$key = $this->generateKey((int) $order->order_number, $project_id, $order->email, $note, (string) $date_start, (string) $date_end, $user_id);
 			if ($show_keys_on_checkout == 1)
 			{
-				$table_rows   .= "	<tr><td>" . $item->product_name . "<br/>" . $note . "</td><td>" . $key["key"]->key . "</td><td>" . $key["key"]->date_start . "</td><td>" . $key["key"]->date_end . "</td><td><a class='" . $this->params->get("checkout_finish_download_btn_css_style") . "' href='" . $key["download_link"] . "'>" . Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DOWNLOAD") . "</a></td></tr>";
+				$table_rows   .= "	<tr><td>" . $item->product_name . "<br/>" . $note . "</td><td>" . $key['key']->key . "</td><td>" . $key['key']->date_start . "</td><td>" . $key['key']->date_end . "</td><td><a class='" . $this->params->get("checkout_finish_download_btn_css_style") . "' href='" . $key["download_link"] . "'>" . Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DOWNLOAD") . "</a></td></tr>";
 				$download_url = new Uri(Uri::root());
 				$download_url->setPath($key["download_link"]);
 				$project_link         = HTMLHelper::link($download_url->toString(), Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DOWNLOAD"));
-				$order_status_comment .= Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DATE_START") . ': ' . $key["key"]->date_start . ', ' . Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DATE_END") . ': ' . $key["key"]->date_end . ', ' . Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_KEY") . ': ' . $key["key"]->key . ', ' . $project_link;
+				$order_status_comment .= Text::_('PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DATE_START') . ': ' . $key['key']->date_start . ', ' . Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_DATE_END") . ': ' . $key['key']->date_end . ', ' . Text::_("PLG_WTJSHOPPINGSWJPROJECTS_CHECKOUT_FINISH_VIEW_KEY") . ': ' . $key['key']->key . ', ' . $project_link;
 			}
 
 		}
@@ -247,24 +250,31 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 	/**
 	 * Generate download key for SW JProejects project
 	 *
-	 * @param $order_number
-	 * @param $project_id
-	 * @param $email
-	 * @param $note
-	 * @param $date_start
-	 * @param $date_end
-	 * @param $user_id
+	 * @param   int     $order_number
+	 * @param   int     $project_id
+	 * @param   string  $email
+	 * @param   string  $note
+	 * @param   string  $date_start
+	 * @param   string  $date_end
+	 * @param   int     $user_id
 	 *
 	 * @return array|void
 	 *
 	 * @since 2.1.0
 	 */
-	private function generateKey($order_number, $project_id, $email, $note, $date_start, $date_end, $user_id = 0)
+	private function generateKey(int $order_number, int $project_id, string $email, string $note, string $date_start, string $date_end, int $user_id = 0): array
 	{
-		$modelProject = $this->getApplication()->bootComponent('com_swjprojects')->getMVCFactory()->createModel('Project', 'Site', array('ignore_request' => false));
+		$modelProject = $this->getApplication()
+			->bootComponent('com_swjprojects')
+			->getMVCFactory()
+			->createModel('Project', 'Site', array('ignore_request' => false));
+		$keyData      = [];
 		if ($project = $modelProject->getItem($project_id))
 		{
-			$modelKey = $this->getApplication()->bootComponent('com_swjprojects')->getMVCFactory()->createModel('Key', 'Administrator', ['ignore_request' => true]);
+			$modelKey = $this->getApplication()
+				->bootComponent('com_swjprojects')
+				->getMVCFactory()
+				->createModel('Key', 'Administrator', ['ignore_request' => true]);
 			$data     = [
 				'key'        => '',
 				'id'         => 0,
@@ -275,6 +285,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 				'date_end'   => $date_end,
 				'state'      => 1,
 				'note'       => $note,
+				'domain'     => $note,
 			];
 
 			if ($user_id > 0)
@@ -288,20 +299,20 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 				$downloadLink = Route::_(RouteHelper::getDownloadRoute(null, $project_id,
 					$project->element, $key->key));
 
-				return [
-					"key"           => $key,
-					"download_link" => $downloadLink
-				];
+				$keyData['key']           = $key;
+				$keyData['download_link'] = $downloadLink;
 			}
 		}
+
+		return $keyData;
 	}
 
 	/**
 	 * Function for updating JoomShopping order history
 	 *
-	 * @param string $jshopping_order_status_id
-	 * @param string $jshopping_order_id
-	 * @param string $additional_text            Additional text from plugin's settings for order history
+	 * @param   string  $jshopping_order_status_id
+	 * @param   string  $jshopping_order_id
+	 * @param   string  $additional_text  Additional text from plugin's settings for order history
 	 *
 	 * @since    1.2.0
 	 */
@@ -309,7 +320,7 @@ class Wtjshoppingswjprojects extends CMSPlugin implements SubscriberInterface
 	{
 		if (!empty($jshopping_order_id))
 		{
-			$orderChangeStatusModel = \JSFactory::getModel('orderChangeStatus', 'jshop');
+			$orderChangeStatusModel = JSFactory::getModel('orderChangeStatus', 'jshop');
 			$orderChangeStatusModel->setData($jshopping_order_id, $jshopping_order_status_id, 1, $jshopping_order_status_id, 1, $additional_text, 1, 0);
 			$orderChangeStatusModel->store();
 		}

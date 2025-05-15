@@ -1,7 +1,7 @@
 <?php
 /**
  * @package     WT JoomShopping SW Projects
- * @version     2.1.1
+ * @version     2.1.1.1
  * @Author      Sergey Tolkachyov, https://web-tolk.ru
  * @copyright   Copyright (C) 2020 Sergey Tolkachyov
  * @license     GNU/GPL 3.0
